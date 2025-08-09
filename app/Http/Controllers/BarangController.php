@@ -17,11 +17,29 @@ class BarangController extends Controller
         return redirect()->back()->with('success', 'Tanggal keluar berhasil diisi!');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $barangs = Barang::latest()->get(); // ambil semua barang terbaru
+        $query = Barang::query();
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('nama_barang', 'like', "%{$request->search}%")
+                    ->orWhere('kode_barang', 'like', "%{$request->search}%");
+            });
+        }
+
+        if ($request->filter == 'keluar') {
+            $query->whereNotNull('tanggal_keluar');
+        } elseif ($request->filter == 'belum') {
+            $query->whereNull('tanggal_keluar');
+        }
+
+        $barangs = $query->latest()->get();
+
         return view('barang', compact('barangs'));
     }
+
+
 
     public function store(Request $request)
     {

@@ -62,9 +62,37 @@
 
         <!-- Tabel Daftar Barang -->
         <div class="bg-white rounded-lg shadow">
-            <div class="p-4 border-b">
+            <!-- Filter & Search -->
+            <div class="p-4 border-b flex justify-between items-center">
                 <h3 class="text-xl font-semibold text-gray-700">Daftar Barang</h3>
+
+                <form action="{{ route('barang.index') }}" method="GET" class="flex gap-2">
+                    <!-- Search -->
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        placeholder="Cari nama atau kode barang..."
+                        class="px-3 py-2 border rounded-lg focus:ring focus:ring-blue-300">
+
+                    <!-- Filter -->
+                    <select name="filter" class="px-3 py-2 border rounded-lg focus:ring focus:ring-blue-300">
+                        <option value="">Semua</option>
+                        <option value="keluar" {{ request('filter') == 'keluar' ? 'selected' : '' }}>Sudah Keluar</option>
+                        <option value="belum" {{ request('filter') == 'belum' ? 'selected' : '' }}>Belum Keluar</option>
+                    </select>
+
+                    <!-- Tombol Cari -->
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                        Cari
+                    </button>
+
+                    <!-- Tombol Clear -->
+                    <a href="{{ route('barang.index') }}"
+                        class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-lg">
+                        Clear
+                    </a>
+                </form>
             </div>
+
+            <!-- Table -->
             <table class="min-w-full table-auto">
                 <thead>
                     <tr class="bg-gray-100 text-left">
@@ -78,7 +106,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($barangs as $barang)
+                    @forelse($barangs as $barang)
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-2 border">{{ $loop->iteration }}</td>
                         <td class="px-4 py-2 border">{{ $barang->kode_barang }}</td>
@@ -87,26 +115,31 @@
                         <td class="px-4 py-2 border">{{ $barang->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i') }}</td>
                         <td class="px-4 py-2 border">
                             {{ $barang->tanggal_keluar 
-                ? \Carbon\Carbon::parse($barang->tanggal_keluar)->timezone('Asia/Jakarta')->format('Y-m-d H:i') 
-                : '-' }}
+                            ? \Carbon\Carbon::parse($barang->tanggal_keluar)->timezone('Asia/Jakarta')->format('Y-m-d H:i') 
+                            : '-' }}
                         </td>
                         <td class="px-4 py-2 border">
                             @if (is_null($barang->tanggal_keluar))
-                            <!-- Jika belum keluar -->
                             <form action="{{ route('barang.keluar', $barang->id) }}" method="POST" class="inline">
                                 @csrf
                                 <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded">
                                     Barang Keluar
                                 </button>
                             </form>
-                            @if (is_null($barang->tanggal_keluar))
-                            <!-- Tombol Edit -->
                             <button onclick="openEditModal({{ $barang->id }}, '{{ $barang->kode_barang }}', '{{ $barang->nama_barang }}', '{{ $barang->stok }}', '{{ $barang->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i') }}', '{{ $barang->tanggal_keluar ? \Carbon\Carbon::parse($barang->tanggal_keluar)->timezone('Asia/Jakarta')->format('Y-m-d H:i') : '-' }}')"
                                 class="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded">
                                 Edit
                             </button>
+                            @else
+                            <button class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed" disabled>
+                                Barang Keluar
+                            </button>
+                            <button class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed" disabled>
+                                Edit
+                            </button>
                             @endif
 
+                            <!-- Tombol Hapus -->
                             <form action="{{ route('barang.destroy', $barang->id) }}" method="POST" class="inline"
                                 onsubmit="return confirm('Yakin ingin menghapus barang ini?');">
                                 @csrf
@@ -115,24 +148,17 @@
                                     Hapus
                                 </button>
                             </form>
-                            @else
-                            <!-- Jika sudah keluar -->
-                            <button class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed" disabled>
-                                Barang Keluar
-                            </button>
-                            <button class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed" disabled>
-                                Edit
-                            </button>
-                            <button class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed" disabled>
-                                Hapus
-                            </button>
-                            @endif
                         </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="7" class="text-center py-4">Tidak ada data</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
+
     </main>
 
 </body>
