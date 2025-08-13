@@ -90,6 +90,13 @@
                         Clear
                     </a>
                 </form>
+
+                <!-- Tombol Download PDF -->
+                <a href="{{ route('barang.downloadPdf', ['search' => request('search'), 'filter' => request('filter')]) }}"
+                    class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
+                    Download PDF
+                </a>
+
             </div>
 
             <!-- Table -->

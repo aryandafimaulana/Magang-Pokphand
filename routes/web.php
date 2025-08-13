@@ -16,4 +16,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/barang', [BarangController::class, 'store'])->name('barang.store');
     Route::delete('/barang/{id}', [BarangController::class, 'destroy'])->name('barang.destroy');
     Route::put('/barang/{id}', [BarangController::class, 'update'])->name('barang.update');
+    Route::get('/barang/download-pdf', [BarangController::class, 'downloadPdf'])->name('barang.downloadPdf');
 });

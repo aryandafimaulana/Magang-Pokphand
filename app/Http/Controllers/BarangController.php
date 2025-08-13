@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Barang;
+use PDF;
 use Carbon\Carbon;
 
 class BarangController extends Controller
@@ -88,5 +89,31 @@ class BarangController extends Controller
         ]);
 
         return redirect()->route('barang.index')->with('success', 'Barang berhasil diperbarui!');
+    }
+
+    public function downloadPdf(Request $request)
+    {
+        // Filter data sesuai search & filter
+        $query = Barang::query();
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('nama_barang', 'like', '%' . $request->search . '%')
+                    ->orWhere('kode_barang', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filter === 'keluar') {
+            $query->whereNotNull('tanggal_keluar');
+        } elseif ($request->filter === 'belum') {
+            $query->whereNull('tanggal_keluar');
+        }
+
+        $barangs = $query->orderBy('created_at', 'desc')->get();
+
+        // Load view PDF
+        $pdf = PDF::loadView('pdf', compact('barangs'))->setPaper('a4', 'landscape');
+
+        return $pdf->download('data-barang.pdf');
     }
 }
